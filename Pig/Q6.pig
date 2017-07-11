@@ -1,5 +1,5 @@
  
-data = LOAD '/user/hive/warehouse/h1bproject.db/h1b' USING PigStorage('\t') as 
+data = LOAD '/user/hive/warehouse/h1b_final' USING PigStorage('\t') as 
 (s_no:int,
 case_status:chararray,
 employer_name:chararray,
@@ -18,8 +18,9 @@ couneachyear= foreach groupbyyear generate group,COUNT(data.case_status);
 
 
 groupbyyearcasestatus= group data by (year,case_status);
-countyearlycasestatus= foreach groupbyyearcasestatus generate group,COUNT($1);
-dump countyearlycasestatus;
+countyearlycasestatus= foreach groupbyyearcasestatus generate group,group.$0,COUNT($1);
+--dump countyearlycasestatus;
 joined= join countyearlycasestatus by $1,couneachyear by $0;
 ans= foreach joined generate FLATTEN($0),(float)($2*100)/$4,$2; --percent generation
 dump ans;
+
